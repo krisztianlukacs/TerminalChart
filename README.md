@@ -1,5 +1,7 @@
 # Binance Candles Script - Fetches cryptocurrency candle data from Binance API
 
+![TerminalChart.png](TerminalChart.png)
+
 ## USAGE
 1. Activate the virtual environment:
    source venv/bin/activate
