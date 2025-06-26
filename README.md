@@ -8,7 +8,7 @@
    pip install requests plotext
 
 3. Run the script:
-   python binance_candles.py [OPTIONS]
+   python terminal_chart.py [OPTIONS]
 
 ## OPTIONS
    --symbol SYMBOL     Trading pair symbol (default: BTCUSDT)
@@ -18,9 +18,9 @@
    --once              Run once and exit (default: continuous mode)
 
 ## EXAMPLES
-   python binance_candles.py --symbol ETHUSDT --interval 1h --limit 50
-   python binance_candles.py --night --symbol ADAUSDT --interval 15m
-   python binance_candles.py --once
+   python terminal_chart.py --symbol ETHUSDT --interval 1h --limit 50
+   python terminal_chart.py --night --symbol ADAUSDT --interval 15m
+   python terminal_chart.py --once
 
 The script runs continuously and refreshes data at appropriate intervals:
 - For minute intervals: refreshes every minute at :00 seconds
