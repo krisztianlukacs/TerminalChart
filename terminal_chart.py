@@ -13,15 +13,15 @@ USAGE:
    python binance_candles.py [OPTIONS]
 
 OPTIONS:
-   --symbol SYMBOL     Trading pair symbol (default: BTCUSDT)
-   --interval INTERVAL Candle interval: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M (default: 1m)
-   --limit LIMIT       Number of candles to fetch (default: 100, max: 1000)
-   --night             Enable night mode for better terminal visibility
-   --once              Run once and exit (default: continuous mode)
+   --symbol SYMBOL         Trading pair symbol (default: BTCUSDT)
+   --timeframe TIMEFRAME   Candle timeframe: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M (default: 1m)
+   --limit LIMIT           Number of candles to fetch (default: 100, max: 1000)
+   --dark                  Enable dark mode for better terminal visibility
+   --once                  Run once and exit (default: continuous mode)
 
 EXAMPLES:
-   python binance_candles.py --symbol ETHUSDT --interval 1h --limit 50
-   python binance_candles.py --night --symbol ADAUSDT --interval 15m
+   python binance_candles.py --symbol ETHUSDT --timeframe 1h --limit 50
+   python binance_candles.py --dark --symbol ADAUSDT --timeframe 15m
    python binance_candles.py --once
 
 The script runs continuously and refreshes data at appropriate intervals:
@@ -119,7 +119,7 @@ def display_table(data):
         print(f"{candle['timestamp_str']:<20} {candle['open']:<12.2f} {candle['high']:<12.2f} {candle['low']:<12.2f} {candle['close']:<12.2f} {candle['volume']:<15.2f}")
 
 
-def display_candlestick_chart(data, symbol, interval, night_mode=False):
+def display_candlestick_chart(data, symbol, timeframe, dark_mode=False):
     """
     Display candlestick chart using plotext.
     """
@@ -131,26 +131,26 @@ def display_candlestick_chart(data, symbol, interval, night_mode=False):
         "Low": [candle['low'] for candle in data],
         "Close": [candle['close'] for candle in data]
     }
-    
+
     # Clear any previous plots
     plt.clear_data()
     plt.clear_figure()
-    
-    # Set night mode colors if requested
-    if night_mode:
+
+    # Set dark mode colors if requested
+    if dark_mode:
         plt.theme('dark')
     else:
         plt.theme('default')
-    
+
     # Create candlestick plot
     plt.candlestick(dates, candle_data)
-    
+
     # Set plot properties
-    interval_name = get_interval_display_name(interval)
-    plt.title(f"{symbol} - Last {len(data)} {interval_name}")
+    interval_name = get_interval_display_name(timeframe)
+    plt.title(f"{symbol} - Last {len(data)} {interval_name} - Timeframe: {timeframe}")
     plt.xlabel(f"Time ({interval_name} ago)")
     plt.ylabel(f"Price ({symbol[-4:] if len(symbol) >= 4 else 'USDT'})")
-    
+
     # Set x-axis labels to show every 10th data point
     x_labels = []
     x_positions = []
@@ -159,9 +159,9 @@ def display_candlestick_chart(data, symbol, interval, night_mode=False):
         periods_ago = len(data) - i - 1
         x_labels.append(f"-{periods_ago}")
         x_positions.append(i)
-    
+
     plt.xticks(x_positions, x_labels)
-    
+
     # Show the plot
     plt.show()
 
@@ -220,23 +220,23 @@ def clear_screen():
     os.system('clear' if os.name == 'posix' else 'cls')
 
 
-def display_data(symbol, interval, limit, night_mode):
+def display_data(symbol, timeframe, limit, dark_mode):
     """
     Fetch and display both table and chart data.
     """
     try:
         print(f"Fetching {symbol} candle data from Binance...\n")
-        data = fetch_binance_candles(symbol, interval, limit)
-        
+        data = fetch_binance_candles(symbol, timeframe, limit)
+
         print("=" * 95)
         print("TABULAR DATA")
         print("=" * 95)
         display_table(data)
-        
+
         print("\n" + "=" * 95)
         print("CANDLESTICK CHART")
         print("=" * 95)
-        display_candlestick_chart(data, symbol, interval, night_mode)
+        display_candlestick_chart(data, symbol, timeframe, dark_mode)
         
         return True
     except Exception as e:
@@ -255,13 +255,13 @@ def parse_arguments():
     
     parser.add_argument('--symbol', default='BTCUSDT',
                        help='Trading pair symbol (default: BTCUSDT)')
-    parser.add_argument('--interval', default='1m',
+    parser.add_argument('--timeframe', default='1m',
                        choices=['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M'],
-                       help='Candle interval (default: 1m)')
+                       help='Candle timeframe (default: 1m)')
     parser.add_argument('--limit', type=int, default=100,
                        help='Number of candles to fetch (default: 100, max: 1000)')
-    parser.add_argument('--night', action='store_true',
-                       help='Enable night mode for better terminal visibility')
+    parser.add_argument('--dark', action='store_true',
+                       help='Enable dark mode for better terminal visibility')
     parser.add_argument('--once', action='store_true',
                        help='Run once and exit (default: continuous mode)')
     
@@ -279,36 +279,36 @@ def main():
     args = parse_arguments()
     
     print(f"Starting Binance Candles Monitor")
-    print(f"Symbol: {args.symbol}, Interval: {args.interval}, Limit: {args.limit}")
-    print(f"Night Mode: {args.night}, Continuous: {not args.once}")
+    print(f"Symbol: {args.symbol}, Timeframe: {args.timeframe}, Limit: {args.limit}")
+    print(f"Dark Mode: {args.dark}, Continuous: {not args.once}")
     print("-" * 60)
-    
+
     if args.once:
         # Run once and exit
-        display_data(args.symbol, args.interval, args.limit, args.night)
+        display_data(args.symbol, args.timeframe, args.limit, args.dark)
     else:
         # Continuous mode
         print(f"Running in continuous mode. Press Ctrl+C to exit.\n")
-        
+
         first_run = True
         while True:
             try:
                 if not first_run:
                     clear_screen()
-                
+
                 # Calculate next update time
-                next_update = calculate_next_update_time(args.interval)
+                next_update = calculate_next_update_time(args.timeframe)
                 sleep_seconds = (next_update - datetime.now()).total_seconds()
-                
+
                 # Display current time and timing info at the top
                 current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 print(f"Last updated: {current_time}")
-                print(f"Symbol: {args.symbol}, Interval: {args.interval}, Limit: {args.limit}")
+                print(f"Symbol: {args.symbol}, Timeframe: {args.timeframe}, Limit: {args.limit}")
                 print(f"Next update: {next_update.strftime('%Y-%m-%d %H:%M:%S')} (in {sleep_seconds:.0f}s)")
                 print("-" * 60)
-                
+
                 # Fetch and display data
-                success = display_data(args.symbol, args.interval, args.limit, args.night)
+                success = display_data(args.symbol, args.timeframe, args.limit, args.dark)
                 
                 if not success:
                     print("Failed to fetch data. Retrying in 60 seconds...")
