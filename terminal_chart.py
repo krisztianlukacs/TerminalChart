@@ -147,7 +147,15 @@ def display_candlestick_chart(data, symbol, timeframe, dark_mode=False):
 
     # Set plot properties
     interval_name = get_interval_display_name(timeframe)
-    plt.title(f"{symbol} - Last {len(data)} {interval_name} - Timeframe: {timeframe}")
+    interval_minutes = get_interval_seconds(timeframe) // 60
+    total_minutes = len(data) * interval_minutes
+    if total_minutes >= 1440 and total_minutes % 1440 == 0:
+        time_span = f"{total_minutes // 1440} Days"
+    elif total_minutes >= 60 and total_minutes % 60 == 0:
+        time_span = f"{total_minutes // 60} Hours"
+    else:
+        time_span = f"{total_minutes} Minutes"
+    plt.title(f"{symbol} - Last {time_span} ({len(data)} candles) - Timeframe: {timeframe}")
     plt.xlabel(f"Time ({interval_name} ago)")
     plt.ylabel(f"Price ({symbol[-4:] if len(symbol) >= 4 else 'USDT'})")
 
