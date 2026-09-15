@@ -14,14 +14,15 @@ USAGE:
 
 OPTIONS:
    --symbol SYMBOL         Trading pair symbol (default: BTCUSDT)
-   --timeframe TIMEFRAME   Candle timeframe: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M (default: 1m)
+   --timeframe TIMEFRAME   Candle timeframe: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M (default: 15m)
    --limit LIMIT           Number of candles to fetch (default: 100, max: 1000)
-   --dark                  Enable dark mode for better terminal visibility
+   --dark                  Enable dark mode for better terminal visibility (default)
+   --light                 Use the default light terminal colors instead of dark mode
    --once                  Run once and exit (default: continuous mode)
 
 EXAMPLES:
    python binance_candles.py --symbol ETHUSDT --timeframe 1h --limit 50
-   python binance_candles.py --dark --symbol ADAUSDT --timeframe 15m
+   python binance_candles.py --light --symbol ADAUSDT --timeframe 1m
    python binance_candles.py --once
 
 The script runs continuously and refreshes data at appropriate intervals:
@@ -124,26 +125,28 @@ def display_candlestick_chart(data, symbol, timeframe, dark_mode=False):
     Display candlestick chart using plotext.
     """
     # Prepare data for plotting - plotext candlestick expects specific format
-    dates = list(range(len(data)))
     candle_data = {
-        "Open": [candle['open'] for candle in data],
-        "High": [candle['high'] for candle in data],
-        "Low": [candle['low'] for candle in data],
-        "Close": [candle['close'] for candle in data]
+        "date": list(range(len(data))),
+        "open": [candle['open'] for candle in data],
+        "high": [candle['high'] for candle in data],
+        "low": [candle['low'] for candle in data],
+        "close": [candle['close'] for candle in data]
     }
 
+    # plotext 6 exposes plot methods through the master figure
+    fig = plt.figure
+
     # Clear any previous plots
-    plt.clear_data()
-    plt.clear_figure()
+    fig.clear()
 
     # Set dark mode colors if requested
     if dark_mode:
-        plt.theme('dark')
+        fig.theme('dark')
     else:
-        plt.theme('default')
+        fig.theme('default')
 
     # Create candlestick plot
-    plt.candlestick(dates, candle_data)
+    fig.draw(fig.candlestick(candle_data))
 
     # Set plot properties
     interval_name = get_interval_display_name(timeframe)
@@ -155,9 +158,9 @@ def display_candlestick_chart(data, symbol, timeframe, dark_mode=False):
         time_span = f"{total_minutes // 60} Hours"
     else:
         time_span = f"{total_minutes} Minutes"
-    plt.title(f"{symbol} - Last {time_span} ({len(data)} candles) - Timeframe: {timeframe}")
-    plt.xlabel(f"Time ({interval_name} ago)")
-    plt.ylabel(f"Price ({symbol[-4:] if len(symbol) >= 4 else 'USDT'})")
+    fig.title(f"{symbol} - Last {time_span} ({len(data)} candles) - Timeframe: {timeframe}")
+    fig.label(f"Time ({interval_name} ago)", axis="x")
+    fig.label(f"Price ({symbol[-4:] if len(symbol) >= 4 else 'USDT'})", axis="y")
 
     # Set x-axis labels to show every 10th data point
     x_labels = []
@@ -168,10 +171,10 @@ def display_candlestick_chart(data, symbol, timeframe, dark_mode=False):
         x_labels.append(f"-{periods_ago}")
         x_positions.append(i)
 
-    plt.xticks(x_positions, x_labels)
+    fig.ruler("x").ticks(x_positions, x_labels)
 
     # Show the plot
-    plt.show()
+    fig.show()
 
 
 def get_interval_display_name(interval):
@@ -263,13 +266,16 @@ def parse_arguments():
     
     parser.add_argument('--symbol', default='BTCUSDT',
                        help='Trading pair symbol (default: BTCUSDT)')
-    parser.add_argument('--timeframe', default='1m',
+    parser.add_argument('--timeframe', default='15m',
                        choices=['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M'],
-                       help='Candle timeframe (default: 1m)')
+                       help='Candle timeframe (default: 15m)')
     parser.add_argument('--limit', type=int, default=100,
                        help='Number of candles to fetch (default: 100, max: 1000)')
-    parser.add_argument('--dark', action='store_true',
-                       help='Enable dark mode for better terminal visibility')
+    theme = parser.add_mutually_exclusive_group()
+    theme.add_argument('--dark', dest='dark', action='store_true', default=True,
+                       help='Enable dark mode for better terminal visibility (default)')
+    theme.add_argument('--light', dest='dark', action='store_false',
+                       help='Use the default light terminal colors instead of dark mode')
     parser.add_argument('--once', action='store_true',
                        help='Run once and exit (default: continuous mode)')
     

@@ -14,14 +14,15 @@
 
 ## OPTIONS
 - --symbol SYMBOL     Trading pair symbol (default: BTCUSDT)
-- --timeframe TIMEFRAME   Candle timeframe: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M (default: 1m)
+- --timeframe TIMEFRAME   Candle timeframe: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M (default: 15m)
 - --limit LIMIT           Number of candles to fetch (default: 100, max: 1000)
-- --dark                  Enable dark mode for better terminal visibility
+- --dark                  Enable dark mode for better terminal visibility (default)
+- --light                 Use the default light terminal colors instead of dark mode
 - --once              Run once and exit (default: continuous mode)
 
 ## EXAMPLES
 - python terminal_chart.py --symbol ETHUSDT --timeframe 1h --limit 50
-- python terminal_chart.py --dark --symbol ADAUSDT --timeframe 15m
+- python terminal_chart.py --light --symbol ADAUSDT --timeframe 1m
 - python terminal_chart.py --once
 
 The script runs continuously and refreshes data at appropriate intervals:
